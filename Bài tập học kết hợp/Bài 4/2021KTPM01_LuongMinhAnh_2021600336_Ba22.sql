@@ -131,4 +131,29 @@ insert into Xuat values('X03', 'SP02', 1)
 insert into Xuat values('X04', 'SP03', 2)
 insert into Xuat values('X05', 'SP05', 1)
 
+--a (2đ). Hãy Đưa ra tổng tiền nhập của mỗi nhân viên trong tháng 8 – năm 2018 có tổng giá trị lớn hơn 100.000
+select MaNV, SUM(SoLuongN*DonGiaN) as 'TongTienN' from Nhap
+inner join PNhap on Nhap.SoHDN = PNhap.SoHDN
+where month(NgayNhap) = 8 and year(NgayNhap) = 2018
+group by MaNV
 
+--b, (2đ). Hãy Đưa ra danh sách các sản phẩm đã nhập nhưng chưa xuất bao giờ.
+Select SanPham.MaSP,TenSP
+From SanPham Inner join nhap on SanPham.MaSP = Nhap.MaSP
+Where SanPham.MaSP in (select MaSP from Nhap) and SanPham.MaSP not in (select MaSP From Xuat)
+
+--c (2đ). Hãy Đưa ra danh sách các sản phẩm đã nhập năm 2020 và đã xuất năm 2020.
+select SanPham.MaSP, TenSP from Nhap
+inner join SanPham on SanPHam.MaSP = Nhap.MaSP
+inner join Pnhap on Nhap.SoHDN = PNhap.SoHDN
+inner join Xuat on Xuat.MaSP = SanPham.MaSP
+inner join PXuat on PXuat.SoHDX = Xuat.SoHDX
+where year(NgayNhap) = 2020 and year(NgayXuat) = 2020
+
+--d (2đ). Hãy Đưa ra danh sách các nhân viên vừa nhập vừa xuất.
+select MaNV, TenNV from NhanVien
+where MaNV in (select MaNV from PXuat) and MaNV in (select MaNV from PXuat)
+
+--e (2đ). Hãy Đưa ra danh sách các nhân viên không tham gia việc nhập và xuất.
+select MaNV, TenNV from NhanVien
+where MaNV not in (select MaNV from PXuat) and MaNV not in (select MaNV from PXuat)

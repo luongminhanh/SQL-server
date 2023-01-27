@@ -131,4 +131,43 @@ insert into Xuat values('X03', 'SP02', 1)
 insert into Xuat values('X04', 'SP03', 2)
 insert into Xuat values('X05', 'SP05', 1)
 
+--a (1đ). Hiển thị thông tin các bảng dữ liệu trên.
+select * from HangSX
+select * from NhanVien
+select * from Nhap
+select * from PNhap
+select * from SanPham
+select * from Xuat
+select * from PXuat
+--b (1đ). Đưa ra thông tin MaSP, TenSP, TenHang,SoLuong, MauSac, GiaBan, DonViTinh, MoTa của các sản phẩm sắp xếp theo chiều giảm dần giá bán.
+select MaSP, TenSP, TenHang, SoLuong, MauSac, GiaBan, DonViTinh, MoTa from SanPham
+inner join HangSX on SanPham.MaHangSX = HangSX.MaHangSX
+order by GiaBan DESC
 
+--c (1đ). Đưa ra thông tin các sản phẩm có trong cửa hàng do công ty có tên hãng là Samsung sản xuất.
+select MaSP, TenSP, TenHang, SoLuong, MauSac, GiaBan, DonViTinh, MoTa from SanPham
+inner join HangSX on SanPham.MaHangSX = HangSX.MaHangSX
+where TenHang = 'Samsung'
+
+--d (1đ). Đưa ra thông tin các nhân viên Nữ ở phòng ‘Kế toán’.
+select * from NhanVien
+where GioiTinh = N'Nữ' and TenPhong = N'Kế toán'
+
+--e (2đ). Đưa ra thông tin phiếu nhập gồm: SoHDN, MaSP, TenSP, TenHang, SoLuongN, DonGiaN, TienNhap=SoLuongN*DonGiaN, MauSac, DonViTinh, NgayNhap, TenNV, TenPhong, sắp xếp theo chiều tăng dần của hóa đơn nhập.
+select PNhap.SoHDN, SanPham.MaSP, TenSP, TenHang, SoLuongN, DonGiaN, SoLuongN*DonGiaN as 'TienNhap', MauSac, DonViTinh, NgayNhap, TenNV, TenPhong 
+from Nhap
+inner join SanPham on Nhap.MaSP = SanPham.MaSP
+inner join HangSX on SanPham.MaHangSX = HangSX.MaHangSX
+inner join PNhap on Nhap.SoHDN = PNhap.SoHDN
+inner join NhanVien on NhanVien.MaNV = PNhap.MaNV
+order by PNhap.SoHDN ASC
+
+--f (2đ). Đưa ra thông tin phiếu xuất gồm: SoHDX, MaSP, TenSP, TenHang, SoLuongX, GiaBan, tienxuat=SoLuongX*GiaBan, MauSac, DonViTinh, NgayXuat, TenNV, TenPhong trong tháng 06 năm 2020, sắp xếp theo chiều tăng dần của SoHDX
+select Xuat.SoHDX, SanPham.MaSP, TenSP, TenHang, SoLuongX, GiaBan, SoLuongX*GiaBan as 'tienxuat', MauSac, DonViTinh, NgayXuat, TenNV, TenPhong 
+from Xuat 
+inner join SanPham on SanPham.MaSP = Xuat.MaSP
+inner join PXuat on PXuat.SoHDX = Xuat.SoHDX
+inner join NhanVien on NhanVien.MaNV = PXuat.MaNV
+inner join HangSX on HangSX.MaHangSX = SanPham.MaHangSX
+where MONTH(NgayXuat) = 06 and YEAR(NgayXuat) = 2020 
+order by Xuat.SoHDX ASC
