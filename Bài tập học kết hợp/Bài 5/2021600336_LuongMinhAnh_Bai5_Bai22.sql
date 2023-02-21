@@ -1,20 +1,83 @@
-﻿--1. Viết hàm thống kê xem mỗi lớp có bao nhiêu sinh viên với malop là tham số truyền vào 
+﻿use master
+go
+create database QLSV
+on primary (
+	name = 'QLSV_dat',
+	filename = 'E:\QLSV.mdf',
+	size = 1MB,
+	maxsize = 5MB,
+	filegrowth = 1MB
+)
+log on(
+	name = 'QLSV_log',
+	filename = 'E:\QLSV.ldf',
+	size = 10MB,
+	maxsize = 50MB,
+	filegrowth = 5MB
+)
+use QLSV 
+go
+create table LOP
+(
+	MaLop nchar(10) primary key,
+	TenLop nvarchar(20),
+	Phong nvarchar(20)
+)
+create table SV
+(
+	MaSV nchar(10) primary key,
+	TenSV nvarchar(20),
+	MaLop nchar(10),
+	constraint fk_SV_LOP foreign key(MaLop)
+		references LOP(MaLop)
+)
+
+insert into LOP values
+('1', 'CD', '1'),
+('2', 'DH', '2'),
+('3', 'LT', '2'),
+('4', 'CH', '4')
+
+insert into SV values
+('1', 'A', '1'),
+('2', 'B', '2'),
+('3', 'C', '1'),
+('4', 'D', '3')
+
+
+--1. Viết hàm thống kê xem mỗi lớp có bao nhiêu sinh viên với malop là tham số truyền vào 
 --từ bàn phím.
-Create function thong_ke(@malop nchar(10))
-returns int
-as
+alter function cau1(@malop nchar(10))
+returns int 
+as 
 begin
 	declare @sl int
-	set @sl = (select count(MaSV)
-	from SV, LOP
-	where SV.MaLop = LOP.MaLop and SV.MaLop = @malop
-	group by TenLop)
-	return @sl
+	set @sl = (select count(MaSV) from SV
+				where MaLop = @malop
+				group by MaLop)
+	return @sl 
 end
 
-select dbo.thong_ke('L02')
+select dbo.cau1('2')
 
 --2. Đưa ra danh sách sinh viên(masv,tensv) học lớp với tenlop được truyền vào từ bàn phím.
+alter function cau2(@tenlop nvarchar(10)) 
+returns @b table (
+		MaSV1 nchar(10),
+		TenSV1 nvarchar(20)
+		)
+as
+begin
+	insert into @b
+			select MaSV, TenSV from SV
+			inner join LOP on SV.MaLop = LOP.MaLop
+			where TenLop = @tenlop
+	return
+end
+
+select * from dbo.cau2('LT')
+
+
 create function fn_timSV(@tenlop nvarchar(10))
 returns @bang table(
 				MaSV nchar(10),
@@ -34,6 +97,31 @@ select * from dbo.fn_timSV('12A')
 --3. Đưa ra hàm thống kê sinhvien: malop,tenlop,soluong sinh viên trong lớp, với tên lớp 
 --được nhập từ bàn phím. Nếu lớp đó chưa tồn tại thì thống kê tất cả các lớp, ngược lại nếu 
 --lớp đó đã tồn tại thì chỉ thống kê mỗi lớp đó.
+
+alter function cau3(@tenlop nvarchar(20))
+returns @b table (
+			malop nchar(10),
+			tenlop nvarchar(20),
+			soluong int
+			)
+as
+begin
+	if (not exists(select TenLop from LOP where TenLop = @tenlop))
+	insert into @b 
+			select LOP.MaLop, TenLop, count(MaSV) from LOP
+			inner join SV on SV.MaLop = LOP.MaLop
+			group by LOP.MaLop, TenLop
+	else
+	insert into @b
+			select LOP.MaLop, TenLop, count(MaSV) from LOP
+			inner join SV on SV.MaLop = LOP.MaLop
+			where TenLop = @tenlop
+			group by LOP.MaLop, TenLop
+	return	
+end
+
+select * from dbo.cau3('CD1')		
+
 alter function fn_tkSV(@tenlop nvarchar(10))
 returns @bang table(
 					malop nchar(10),
